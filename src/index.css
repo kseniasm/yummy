@@ -112,7 +112,7 @@ body {
   border-radius: 5px;
   padding-top: 30px;
   text-align: center;
-  /* min-height: 236px; */
+   min-height: 236px; 
 }
 
 .dropzone--isActive {

@@ -1,46 +1,38 @@
-import React, { Component } from 'react'
-import { Grid, Segment, Icon, Button } from 'semantic-ui-react'
+import React from "react";
+import { Grid } from "semantic-ui-react";
+import { connect } from "react-redux";
+import Basics from "./Basics";
+import PasswordChange from "./PasswordChange";
+import { updatePassword } from "../../store/actions/authActions";
+import { updateProfile } from "../../store/actions/userActions";
+import ImageUpload from "./ImageUpload";
 
- class Settings extends Component {
-    render() {
-        return (
-            <Segment.Group>
-            <Segment attached="top">
-              <Grid>
-                <Grid.Column width={1}>
-                  <Icon size="large" color="teal" name="info" />
-                </Grid.Column>
-                <Grid.Column width={15}>
-                  <p>Basics</p>
-                </Grid.Column>
-              </Grid>
-            </Segment>
-            <Segment attached>
-              <Grid verticalAlign="middle">
-                <Grid.Column width={1}>
-                  <Icon name="calendar" size="large" color="teal" />
-                </Grid.Column>
-                <Grid.Column width={15}>
-                  <span>About</span>
-                </Grid.Column>
-              </Grid>
-            </Segment>
-            <Segment attached>
-              <Grid verticalAlign="middle">
-                <Grid.Column width={1}>
-                  <Icon name="marker" size="large" color="teal" />
-                </Grid.Column>
-                <Grid.Column width={11}>
-                  <span>My photos</span>
-                </Grid.Column>
-                <Grid.Column width={4}>
-                  <Button color="teal" size="tiny" content="Show Map" />
-                </Grid.Column>
-              </Grid>
-            </Segment>
-          </Segment.Group>
-        )
-    }
-}
+const Settings = ({ updatePassword, providerId, user, updateProfile }) => {
+  return (
+    <Grid>
+      <Grid.Column width={16}>
+        <ImageUpload />
+        <Basics initialValues={user} updateProfile={updateProfile} />
+        <PasswordChange
+          updatePassword={updatePassword}
+          providerId={providerId}
+        />
+      </Grid.Column>
+      <Grid.Column width={4}></Grid.Column>
+    </Grid>
+  );
+};
 
-export default Settings
+const actions = {
+  updatePassword,
+  updateProfile
+};
+
+const mapStateToProps = state => ({
+  providerId:
+    state.firebase.auth.isLoaded &&
+    state.firebase.auth.providerData[0].providerId,
+  user: state.firebase.profile // applicaiton doesn't render till we know the status of authentication
+});
+
+export default connect(mapStateToProps, actions)(Settings);

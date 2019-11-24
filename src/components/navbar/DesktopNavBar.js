@@ -1,47 +1,59 @@
-import React, { Component } from "react";
+import React, { Component, Fragment } from "react";
 import { Menu, Container, Button } from "semantic-ui-react";
-import { NavLink, Link, withRouter } from "react-router-dom";
+import { Link, withRouter } from "react-router-dom";
+import { withFirebase } from "react-redux-firebase";
+import { connect } from "react-redux";
 import SignedOutMenu from "./SignedOutMenu";
 import SignedInMenu from "./SignedInMenu";
+import { openModal } from "../../store/actions/modalActions";
 
 class NavBar extends Component {
-  state = {
-    authenticated: true
+  handleSignIn = () => this.props.openModal("LoginModal");
+
+  handleRegister = () => this.props.openModal("RegisterModal");
+
+  handleSignOut = () => {
+    this.props.firebase.logout();
+    this.props.history.push("/");
   };
 
-  handleSignIn = () => this.setState({ authenticated: true });
-  handleSignOut = () => {
-    this.setState({ authenticated: false });
-    this.props.history.push('/');
-  }
-
   render() {
-    const { authenticated } = this.state;
+    const { auth, profile } = this.props;
+    const authenticated = auth.isLoaded && !auth.isEmpty;
 
     return (
       <Menu inverted fixed="top">
         <Container>
-          <Menu.Item as={Link} to="/"  header>
+          <Menu.Item as={Link} to="/" header>
             <img src="/assets/icon.png" alt="logo" />
             YUMMY
           </Menu.Item>
-          {/* <Menu.Item name="Recipes" as={NavLink} to='/recipes' /> */}
-          <Menu.Item name="People" as={NavLink} to="/people" />
-          <Menu.Item>
-            <Button
-              as={Link}
-              to="/recipes/new"
-              floated="right"
-              positive
-              inverted
-              content="New Recipe"
-            />
-          </Menu.Item>
+          {authenticated && (
+            <Fragment>
+              <Menu.Item>
+                <Button
+                  as={Link}
+                  to="/recipes/new"
+                  floated="right"
+                  positive
+                  inverted
+                  content="New Recipe"
+                />
+              </Menu.Item>
+            </Fragment>
+          )}
 
           {authenticated ? (
-            <SignedInMenu signOut={this.handleSignOut} />
+            <SignedInMenu
+              auth={auth}
+              signOut={this.handleSignOut}
+              profile={profile}
+            />
           ) : (
-            <SignedOutMenu signIn={this.handleSignIn} />
+            <SignedOutMenu
+              signIn={this.handleSignIn}
+              register={this.handleRegister}
+            />
           )}
         </Container>
       </Menu>
@@ -49,4 +61,15 @@ class NavBar extends Component {
   }
 }
 
-export default withRouter(NavBar);
+const mapStateToProps = state => ({
+  auth: state.firebase.auth,
+  profile: state.firebase.profile
+});
+
+const actions = {
+  openModal
+};
+
+export default withRouter(
+  withFirebase(connect(mapStateToProps, actions)(NavBar))
+);
